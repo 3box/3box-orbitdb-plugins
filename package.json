@@ -1,0 +1,22 @@
+{
+  "name": "3box-orbitdb-plugins",
+  "version": "1.0.0",
+  "description": "3Box plugins for orbitdb",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/3box/3box-orbitdb-plugins.git"
+  },
+  "author": "3Box",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/3box/3box-orbitdb-plugins/issues"
+  },
+  "homepage": "https://github.com/3box/3box-orbitdb-plugins#readme",
+  "dependencies": {
+    "did-jwt": "^0.1.3"
+  }
+}
