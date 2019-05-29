@@ -41,7 +41,7 @@ class OdbIdentityProvider {
     })
     const jwt = `${JWT_HEADER}.${payload}.${identity.signatures.publicKey}`
     try {
-      await verifyJWT(jwt)
+      await verifyJWT(jwt, { auth: true })
     } catch (e) {
       return false
     }
