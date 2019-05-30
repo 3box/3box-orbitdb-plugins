@@ -34,7 +34,7 @@ class LegacyIPFS3BoxAccessController {
     const publicKey = entry.v === 0 ? entry.key : await publicKeyFromDID(entry.identity.id)
     if (this.write.includes(publicKey) ||
       this.write.includes('*')) {
-      return true
+      return entry.v === 0 ? true : await identityProvider.verifyIdentity(entry.identity)
     }
     return false
   }
