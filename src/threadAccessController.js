@@ -97,6 +97,7 @@ class ThreadAccessController extends EventEmitter{
   async load (address) {
     if (this._db) { await this._db.close() }
 
+    // TODO - skip manifest for mod-access
     this._db = await this._orbitdb.feed(ensureAddress(address), {
       identity: this._identity,
       accessController: {
@@ -115,6 +116,7 @@ class ThreadAccessController extends EventEmitter{
   }
 
   async save () {
+  // TODO - add name of thread and root mod
     return {
       address: this._db.address.toString()
     }
