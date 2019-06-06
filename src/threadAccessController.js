@@ -116,7 +116,6 @@ class ThreadAccessController extends EventEmitter{
   }
 
   async save () {
-  // TODO - add name of thread and root mod
     return {
       address: this._db.address.toString(),
       rootMod: this._rootMod,
@@ -126,10 +125,13 @@ class ThreadAccessController extends EventEmitter{
 
   async grant (capability, id) {
     if (!this._db.access.isValidCapability(capability)) {
-      throw new Error('Invalid capability to grant')
+      throw new Error('grant: Invalid capability to grant')
     }
-    if (!isValid3ID(id)) {
-      throw new Error('Invalid 3ID to grant')
+    if (capability === MEMBER && this.capabilities['members'].includes(id)) {
+        throw new Error(`grant: capability ${capability} has already been granted to ${id}`)
+    }
+    if (capability === MODERATOR && this.capabilities['moderators'].includes(id)) {
+        throw new Error(`grant: capability ${capability} has already been granted to ${id}`)
     }
     try {
       await this._db.add({capability, id})
