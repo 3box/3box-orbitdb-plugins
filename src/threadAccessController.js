@@ -118,7 +118,9 @@ class ThreadAccessController extends EventEmitter{
   async save () {
   // TODO - add name of thread and root mod
     return {
-      address: this._db.address.toString()
+      address: this._db.address.toString(),
+      rootMod: this._rootMod,
+      members: this._members
     }
   }
 
@@ -146,7 +148,7 @@ class ThreadAccessController extends EventEmitter{
   static async create (orbitdb, options = {}) {
     if (!options.rootMod) throw new Error('Thread AC: rootMod required')
     const ac = new ThreadAccessController(orbitdb, orbitdb._ipfs, options.identity, options.rootMod, options)
-    await ac.load(options.threadName)
+    await ac.load(options.address || options.threadName)
     return ac
   }
 }
