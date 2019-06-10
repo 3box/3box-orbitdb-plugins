@@ -1,5 +1,11 @@
 # Release Notes
 
+## v1.0.4 - 2019-06-10
+* fix: verify v1 entries
+* feat: don't added capability if already added
+* ref: rootMod -> firstModerator
+* fix: mods can delete any post
+
 ## v1.0.2 - 2019-06-05
 * Feat: Add ModeratorAccessController and ThreadAccessController
 
