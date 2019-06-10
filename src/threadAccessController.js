@@ -56,10 +56,7 @@ class ThreadAccessController extends EventEmitter{
       // An id can delete their own entries
       if (delEntry.identity.id === entry.identity.id) return await trueIfValidSig()
 
-      // Mods can't delete other mods entries
-      if (mods.includes(delEntry.identity.id)) return false
-
-      // Mods can delete any other entries
+      // Mods can delete any entry
       if (isMod) return await trueIfValidSig()
     }
 
