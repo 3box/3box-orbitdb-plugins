@@ -4,11 +4,11 @@ const MODERATOR = 'MODERATOR'
 const MEMBER = 'MEMBER'
 
 class ModeratorAccessController {
-  constructor (rootMod, options) {
+  constructor (firstModerator, options) {
     this._capabilityTypes = [MODERATOR]
     this._write = []     // Allowed to add other mods or members
-    this._rootMod = rootMod
-    this._write.push(this._rootMod)
+    this._firstModerator = firstModerator
+    this._write.push(this._firstModerator)
     this._members = Boolean(options.members)
     if (this._members) this._capabilityTypes.push(MEMBER)
   }
@@ -23,8 +23,8 @@ class ModeratorAccessController {
     return this._capabilityTypes.includes(capability)
   }
 
-  get rootModerator () {
-    return this._rootMod
+  get firstModerator () {
+    return this._firstModerator
   }
 
   async canAppend (entry, identityProvider) {
@@ -47,19 +47,19 @@ class ModeratorAccessController {
     const suffix = addList.pop()
     this._members = suffix === 'members'
     const mod = suffix.includes('mod') ? suffix : addList.pop()
-    this._rootMod = mod.split('_')[1]
+    this._firstModerator = mod.split('_')[1]
   }
 
   async save () {
     // TODO if entire obj saved in manfest, can just pass our own fields
-    let address = `${type}/mod_${this._rootMod}`
+    let address = `${type}/mod_${this._firstModerator}`
     address += this._members ? '/members' : ''
     return { address }
   }
 
   static async create (orbitdb, options = {}) {
-    if (!options.rootMod) throw new Error('Moderator AC: rootMod required')
-    return new ModeratorAccessController(options.rootMod, options)
+    if (!options.firstModerator) throw new Error('Moderator AC: firstModerator required')
+    return new ModeratorAccessController(options.firstModerator, options)
   }
 }
 

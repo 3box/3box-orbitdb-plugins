@@ -14,14 +14,14 @@ const isValid3ID = did => {
 }
 
 class ThreadAccessController extends EventEmitter{
-  constructor (orbitdb, ipfs, identity, rootMod, options) {
+  constructor (orbitdb, ipfs, identity, firstModerator, options) {
     super()
     this._orbitdb = orbitdb
     this._db = null
     this._options = options || {}
     this._ipfs = ipfs
     this._members = Boolean(options.members)
-    this._rootMod = rootMod
+    this._firstModerator = firstModerator
     this._threadName = options.threadName
     this._identity = identity
   }
@@ -71,7 +71,7 @@ class ThreadAccessController extends EventEmitter{
   _updateCapabilites () {
     let moderators = [], members = []
     if (this._db) {
-      moderators.push(this._db.access._rootMod)
+      moderators.push(this._db.access._firstModerator)
       Object.entries(this._db.index).forEach(entry => {
         const capability = entry[1].payload.value.capability
         const id = entry[1].payload.value.id
@@ -99,7 +99,7 @@ class ThreadAccessController extends EventEmitter{
       identity: this._identity,
       accessController: {
         type: 'moderator-access',
-        rootMod: this._rootMod,
+        firstModerator: this._firstModerator,
         members: this._members
       },
       sync: true
@@ -115,7 +115,7 @@ class ThreadAccessController extends EventEmitter{
   async save () {
     return {
       address: this._db.address.toString(),
-      rootMod: this._rootMod,
+      firstModerator: this._firstModerator,
       members: this._members
     }
   }
@@ -145,8 +145,8 @@ class ThreadAccessController extends EventEmitter{
 
   /* Factory */
   static async create (orbitdb, options = {}) {
-    if (!options.rootMod) throw new Error('Thread AC: rootMod required')
-    const ac = new ThreadAccessController(orbitdb, orbitdb._ipfs, options.identity, options.rootMod, options)
+    if (!options.firstModerator) throw new Error('Thread AC: firstModerator required')
+    const ac = new ThreadAccessController(orbitdb, orbitdb._ipfs, options.identity, options.firstModerator, options)
     await ac.load(options.address || options.threadName)
     return ac
   }
