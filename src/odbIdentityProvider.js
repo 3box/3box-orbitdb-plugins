@@ -30,7 +30,8 @@ class OdbIdentityProvider {
       data,
       iat: null
     }
-    return (await this.threeId.signJWT(payload, { space })).split('.')[2]
+    const opts = !space ? { use3ID: true } : { space }
+    return (await this.threeId.signJWT(payload, opts)).split('.')[2]
   }
 
   static async verifyIdentity (identity) {
