@@ -1,5 +1,8 @@
 # Release Notes
 
+## v1.0.6 - 2019-10-15
+* fix: correctly reference dependencies
+
 ## v1.0.5 - 2019-06-10
 * fix: sign entries for mainkeyring with 3id
 
