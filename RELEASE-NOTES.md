@@ -1,5 +1,8 @@
 # Release Notes
 
+## v1.0.7 - 2020-1-14
+Upgrade related dependencies for orbitdb 0.23 and ipfs 0.40 upgrade across libs
+
 ## v1.0.6 - 2019-10-15
 * fix: correctly reference dependencies
 
