@@ -24,6 +24,7 @@ class ThreadAccessController extends EventEmitter{
     this._firstModerator = firstModerator
     this._threadName = options.threadName
     this._identity = identity
+    this._encKeyId = options.encKeyId
   }
 
   static get type () { return type }
@@ -68,8 +69,26 @@ class ThreadAccessController extends EventEmitter{
     return this._capabilities
   }
 
+  getEncryptedKey (did) {
+    // TODO throw if not confidential thread
+    let response = null
+    // change to for loop
+    Object.entries(this._db.index).forEach(entry => {
+      const capability = entry[1].payload.value.capability
+      const id = entry[1].payload.value.id
+      const ciphertext = entry[1].payload.value.ciphertext
+      // maybe check capability still
+      if (did === id) {
+        response = ciphertext
+      }
+    })
+    if (response === null) throw new Error('no access')
+    return response
+  }
+
   _updateCapabilites () {
     let moderators = [], members = []
+    // TODO will add moderator twice, in this case.
     if (this._db) {
       moderators.push(this._db.access._firstModerator)
       Object.entries(this._db.index).forEach(entry => {
@@ -94,14 +113,18 @@ class ThreadAccessController extends EventEmitter{
   async load (address) {
     if (this._db) { await this._db.close() }
 
+
+    const accessController = {
+      type: 'moderator-access',
+      firstModerator: this._firstModerator,
+      members: this._members
+    }
+    if (this._encKeyId) accessController.encKeyId = this._encKeyId
+
     // TODO - skip manifest for mod-access
     this._db = await this._orbitdb.feed(ensureAddress(address), {
       identity: this._identity,
-      accessController: {
-        type: 'moderator-access',
-        firstModerator: this._firstModerator,
-        members: this._members
-      },
+      accessController,
       sync: true
     })
 
@@ -113,25 +136,33 @@ class ThreadAccessController extends EventEmitter{
   }
 
   async save () {
-    return {
+    const manifest = {
       address: this._db.address.toString(),
       firstModerator: this._firstModerator,
       members: this._members
     }
+    if (this._encKeyId) manifest.encKeyId = this._encKeyId
+    return manifest
   }
 
-  async grant (capability, id) {
+  async grant (capability, id, ciphertext) {
     if (!this._db.access.isValidCapability(capability)) {
       throw new Error('grant: Invalid capability to grant')
     }
     if (capability === MEMBER && this.capabilities['members'].includes(id)) {
         throw new Error(`grant: capability ${capability} has already been granted to ${id}`)
     }
-    if (capability === MODERATOR && this.capabilities['moderators'].includes(id)) {
+    // length 1 allows first mod to add entry with ciphertext
+    if (capability === MODERATOR && this.capabilities['moderators'].includes(id) && this.capabilities['moderators'].length !== 1) {
         throw new Error(`grant: capability ${capability} has already been granted to ${id}`)
     }
+    if (this._encKeyId && !ciphertext) {
+      throw new Error('grant: confidential threads require access to be granted with encrypted key')
+    }
     try {
-      await this._db.add({capability, id})
+      const entry = {capability, id}
+      if (ciphertext) entry.ciphertext = ciphertext
+      await this._db.add(entry)
     } catch (e) {
       if (e.toString().includes('not append entry')) throw new Error(`grant: Capability ${capability} can not be granted to ${id}`)
       throw e

@@ -11,6 +11,7 @@ class ModeratorAccessController {
     this._write.push(this._firstModerator)
     this._members = Boolean(options.members)
     if (this._members) this._capabilityTypes.push(MEMBER)
+    this._encKeyId = options.encKeyId
   }
 
   static get type () { return type }
@@ -35,7 +36,10 @@ class ModeratorAccessController {
     const validCapability = this.isValidCapability(capability)
     const validSig = async () => identityProvider.verifyIdentity(entry.identity)
     if (isMod && validCapability && (await validSig())) {
-      if (capability === MODERATOR) this._write.push(idAdd)
+      if (capability === MODERATOR) {
+        if (idAdd === this.firstModerator) return true
+        this._write.push(idAdd)
+      }
       return true
     }
 
@@ -54,7 +58,9 @@ class ModeratorAccessController {
     // TODO if entire obj saved in manfest, can just pass our own fields
     let address = `${type}/mod_${this._firstModerator}`
     address += this._members ? '/members' : ''
-    return { address }
+    const manifest =  { address }
+    if (this._encKeyId) manifest.encKeyId = this._encKeyId
+    return manifest
   }
 
   static async create (orbitdb, options = {}) {
