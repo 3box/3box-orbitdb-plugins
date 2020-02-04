@@ -82,7 +82,7 @@ class ThreadAccessController extends EventEmitter{
         response = ciphertext
       }
     })
-    if (response === null) throw new Error('no access')
+    if (response === null) throw new Error(`getEncryptedKey: no access for ${did}`)
     return response
   }
 
@@ -94,7 +94,9 @@ class ThreadAccessController extends EventEmitter{
       Object.entries(this._db.index).forEach(entry => {
         const capability = entry[1].payload.value.capability
         const id = entry[1].payload.value.id
-        if (capability === MODERATOR) moderators.push(id)
+        if (capability === MODERATOR) {
+          if (!moderators.includes(id)) moderators.push(id)
+        }
         if (capability === MEMBER) members.push(id)
       })
     }
