@@ -29,7 +29,7 @@ class ThreadAccessController extends EventEmitter{
 
   static get type () { return type }
 
-  // return addres of AC (in this case orbitdb address of AC)
+  // return address of AC (in this case orbitdb address of AC)
   get address () {
     return this._db.address
   }
@@ -113,22 +113,11 @@ class ThreadAccessController extends EventEmitter{
   }
 
   async load (address) {
+    const isAddress = address.includes('/')
     if (this._db) { await this._db.close() }
 
-
-    const accessController = {
-      type: 'moderator-access',
-      firstModerator: this._firstModerator,
-      members: this._members
-    }
-    if (this._encKeyId) accessController.encKeyId = this._encKeyId
-
     // TODO - skip manifest for mod-access
-    this._db = await this._orbitdb.feed(ensureAddress(address), {
-      identity: this._identity,
-      accessController,
-      sync: true
-    })
+    this._db = await this._orbitdb.feed(ensureAddress(address), this._createOrbitOpts(isAddress))
 
     this._db.events.on('ready', this._onUpdate.bind(this))
     this._db.events.on('write', this._onUpdate.bind(this))
@@ -137,9 +126,31 @@ class ThreadAccessController extends EventEmitter{
     await this._db.load()
   }
 
+  _createOrbitOpts(loadByAddress = false) {
+    // TODO cleanup
+    const accessController = loadByAddress ? null : {
+      type: 'moderator-access',
+      firstModerator: this._firstModerator,
+      members: this._members
+    }
+
+    if (this._encKeyId && !loadByAddress) accessController.encKeyId = this._encKeyId
+
+     const opts = {
+      identity: this._identity,
+      sync: true
+    }
+
+    if(!loadByAddress) opts.accessController = accessController
+
+    return opts
+  }
+
   async save () {
+    const address = await this._orbitdb.determineAddress(`${this._threadName}/_access`, 'feed', this._createOrbitOpts())
+
     const manifest = {
-      address: this._db.address.toString(),
+      address: address.toString(),
       firstModerator: this._firstModerator,
       members: this._members
     }
@@ -179,9 +190,8 @@ class ThreadAccessController extends EventEmitter{
   /* Factory */
   static async create (orbitdb, options = {}) {
     if (!options.firstModerator) throw new Error('Thread AC: firstModerator required')
-    const ac = new ThreadAccessController(orbitdb, orbitdb._ipfs, options.identity, options.firstModerator, options)
-    await ac.load(options.address || options.threadName)
-    return ac
+    if (options.address) options.threadName = options.address.split('/')[3]
+    return new ThreadAccessController(orbitdb, orbitdb._ipfs, options.identity, options.firstModerator, options)
   }
 }
 

@@ -64,8 +64,20 @@ class ModeratorAccessController {
   }
 
   static async create (orbitdb, options = {}) {
-    if (!options.firstModerator) throw new Error('Moderator AC: firstModerator required')
-    return new ModeratorAccessController(options.firstModerator, options)
+    let firstModerator, members, encKeyId
+    
+    if (options.address) {
+      members = options.address.includes('members')
+      firstModerator = options.address.split('/')[1].split('_')[1]
+      encKeyId = options.encKeyId
+    } else {
+      members = options.members
+      firstModerator = options.firstModerator
+      encKeyId = options.encKeyId
+    }
+
+    if (!firstModerator) throw new Error('Moderator AC: firstModerator required')
+    return new ModeratorAccessController(firstModerator, {members, encKeyId})
   }
 }
 
