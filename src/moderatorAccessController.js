@@ -65,7 +65,7 @@ class ModeratorAccessController {
 
   static async create (orbitdb, options = {}) {
     let firstModerator, members, encKeyId
-    
+
     if (options.address) {
       members = options.address.includes('members')
       firstModerator = options.address.split('/')[1].split('_')[1]

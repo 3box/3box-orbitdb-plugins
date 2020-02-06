@@ -2,6 +2,7 @@ const ensureAddress = require('orbit-db-access-controllers/src/utils/ensure-ac-a
 const EventEmitter = require('events').EventEmitter
 const entryIPFS = require('ipfs-log/src/entry')
 const isIPFS = require('is-ipfs')
+const orbitAddress = require('orbit-db/src/orbit-db-address')
 
 const type = 'thread-access'
 const MODERATOR = 'MODERATOR'
@@ -70,25 +71,22 @@ class ThreadAccessController extends EventEmitter{
   }
 
   getEncryptedKey (did) {
-    // TODO throw if not confidential thread
-    let response = null
-    // change to for loop
-    Object.entries(this._db.index).forEach(entry => {
-      const capability = entry[1].payload.value.capability
-      const id = entry[1].payload.value.id
-      const ciphertext = entry[1].payload.value.ciphertext
-      // maybe check capability still
-      if (did === id) {
-        response = ciphertext
+    if (!this._encKeyId) throw new Error(`getEncryptedKey: only available for confidential threads`)
+    const didEntries = Object.entries(this._db.index).map(entry => {
+      return {
+        id: entry[1].payload.value.id,
+        encryptedReadKey: entry[1].payload.value.encryptedReadKey
       }
+    }).filter(entry => {
+      return entry.id === did
     })
-    if (response === null) throw new Error(`getEncryptedKey: no access for ${did}`)
-    return response
+
+    if (didEntries.length === 0 ) throw new Error(`getEncryptedKey: no access for ${did}`)
+    return didEntries[0].encryptedReadKey
   }
 
   _updateCapabilites () {
     let moderators = [], members = []
-    // TODO will add moderator twice, in this case.
     if (this._db) {
       moderators.push(this._db.access._firstModerator)
       Object.entries(this._db.index).forEach(entry => {
@@ -113,7 +111,7 @@ class ThreadAccessController extends EventEmitter{
   }
 
   async load (address) {
-    const isAddress = address.includes('/')
+    const isAddress = orbitAddress.isValid(address)
     if (this._db) { await this._db.close() }
 
     // TODO - skip manifest for mod-access
@@ -127,23 +125,19 @@ class ThreadAccessController extends EventEmitter{
   }
 
   _createOrbitOpts(loadByAddress = false) {
-    // TODO cleanup
-    const accessController = loadByAddress ? null : {
+    const accessController = {
       type: 'moderator-access',
       firstModerator: this._firstModerator,
-      members: this._members
+      members: this._members,
+      encKeyId: this._encKeyId
     }
 
-    if (this._encKeyId && !loadByAddress) accessController.encKeyId = this._encKeyId
-
-     const opts = {
+    const opts = {
       identity: this._identity,
       sync: true
     }
 
-    if(!loadByAddress) opts.accessController = accessController
-
-    return opts
+    return Object.assign(opts, loadByAddress ? {} : { accessController })
   }
 
   async save () {
@@ -158,23 +152,23 @@ class ThreadAccessController extends EventEmitter{
     return manifest
   }
 
-  async grant (capability, id, ciphertext) {
+  async grant (capability, id, encryptedReadKey) {
     if (!this._db.access.isValidCapability(capability)) {
       throw new Error('grant: Invalid capability to grant')
     }
     if (capability === MEMBER && this.capabilities['members'].includes(id)) {
         throw new Error(`grant: capability ${capability} has already been granted to ${id}`)
     }
-    // length 1 allows first mod to add entry with ciphertext
+    // length 1 allows first mod to add entry with encryptedReadKey
     if (capability === MODERATOR && this.capabilities['moderators'].includes(id) && this.capabilities['moderators'].length !== 1) {
         throw new Error(`grant: capability ${capability} has already been granted to ${id}`)
     }
-    if (this._encKeyId && !ciphertext) {
+    if (this._encKeyId && !encryptedReadKey) {
       throw new Error('grant: confidential threads require access to be granted with encrypted key')
     }
     try {
       const entry = {capability, id}
-      if (ciphertext) entry.ciphertext = ciphertext
+      if (encryptedReadKey) entry.encryptedReadKey = encryptedReadKey
       await this._db.add(entry)
     } catch (e) {
       if (e.toString().includes('not append entry')) throw new Error(`grant: Capability ${capability} can not be granted to ${id}`)
