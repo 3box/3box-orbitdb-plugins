@@ -1,5 +1,8 @@
 # Release Notes
 
+## v1.1.0 - 2020-2-13
+Confidential threads access controllers
+
 ## v1.0.7 - 2020-1-14
 Upgrade related dependencies for orbitdb 0.23 and ipfs 0.40 upgrade across libs
 
