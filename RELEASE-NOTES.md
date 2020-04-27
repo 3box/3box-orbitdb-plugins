@@ -1,5 +1,8 @@
 # Release Notes
 
+## v2.0.0 - 2020-04-27
+* chore: upgrade did-jwt library
+
 ## v1.1.0 - 2020-2-13
 Confidential threads access controllers
 
