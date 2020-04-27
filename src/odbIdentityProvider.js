@@ -6,7 +6,6 @@ const encodeSection = data => base64url.encode(JSON.stringify(data))
 const TYPE = '3ID'
 const JWT_HEADER = encodeSection({ typ: 'JWT', alg: 'ES256K' })
 
-
 class OdbIdentityProvider {
   constructor ({ threeId }) {
     // super(options)
@@ -34,7 +33,14 @@ class OdbIdentityProvider {
     return (await this.threeId.signJWT(payload, opts)).split('.')[2]
   }
 
+  static async setDidResolver(resolver) {
+    this._resolver = resolver
+  }
+
   static async verifyIdentity (identity) {
+    if (!this._resolver) {
+      throw new Error('The DID resolver must first be set with setDidResolver()')
+    }
     const payload = encodeSection({
       iat: null,
       data: identity.publicKey + identity.signatures.id,
@@ -42,7 +48,7 @@ class OdbIdentityProvider {
     })
     const jwt = `${JWT_HEADER}.${payload}.${identity.signatures.publicKey}`
     try {
-      await verifyJWT(jwt, { auth: true })
+      await verifyJWT(jwt, { auth: true, resolver: this._resolver })
     } catch (e) {
       return false
     }
