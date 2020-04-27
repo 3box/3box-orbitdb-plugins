@@ -1,6 +1,6 @@
 {
   "name": "3box-orbitdb-plugins",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "3Box plugins for orbitdb",
   "main": "src/index.js",
   "scripts": {
