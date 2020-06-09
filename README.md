@@ -6,3 +6,5 @@
 
 This repo contains the 3Box compatible `orbit-db-identity-provider` as well as custom access controllers for moderated threads.
 
+## Maintainers
+[@zachferland](https://github.com/zachferland)
