@@ -26,8 +26,8 @@ class OdbIdentityProvider {
 
   async signIdentity (data, { space }) {
     const payload = {
-      data,
-      iat: null
+      iat: null,
+      data
     }
     const opts = !space ? { use3ID: true } : { space }
     return (await this.threeId.signJWT(payload, opts)).split('.')[2]
