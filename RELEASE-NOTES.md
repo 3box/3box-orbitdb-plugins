@@ -1,5 +1,8 @@
 # Release Notes
 
+## v2.1.0 - 2020-06-12
+* fix: jwt payload ordering
+
 ## v2.0.0 - 2020-04-27
 * chore: upgrade did-jwt library
 
