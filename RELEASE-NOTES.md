@@ -1,5 +1,8 @@
 # Release Notes
 
+## v2.1.1 - 2020-07-19
+* chore: update orbitdb
+
 ## v2.1.0 - 2020-06-12
 * fix: jwt payload ordering
 
