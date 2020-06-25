@@ -1,5 +1,8 @@
 # Release Notes
 
+## v2.1.2 - 2020-07-25
+* chore: bump orbit-db-access-controllers
+
 ## v2.1.1 - 2020-07-19
 * chore: update orbitdb
 
