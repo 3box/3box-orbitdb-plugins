@@ -23,7 +23,7 @@
     "is-ipfs": "^0.6.3",
     "orbit-db": "^0.23.1",
     "orbit-db-access-controllers": "~0.2.4",
-    "orbit-db-io": "^0.2.0",
+    "orbit-db-io": "^0.3.0",
     "safe-buffer": "^5.1.2"
   }
 }
