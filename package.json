@@ -19,7 +19,7 @@
   "dependencies": {
     "base64url": "^3.0.1",
     "did-jwt": "^4.2.0",
-    "ipfs-log": "^4.5.4",
+    "ipfs-log": "^5.1.1",
     "is-ipfs": "^0.6.3",
     "orbit-db": "^0.23.1",
     "orbit-db-access-controllers": "~0.2.4",
